@@ -1,0 +1,179 @@
+@model OnlineMovieBooking.Models.Booking
+
+@{
+    ViewBag.Title = "Edit Booking";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Update Booking Details</h2>
+
+<div class="row">
+    <div class="col-md-6">
+        @using (Html.BeginForm("Edit", "Booking", FormMethod.Post, new { id = "editBookingForm" }))
+        {
+            @Html.AntiForgeryToken()
+
+            <div class="form-horizontal">
+                <h4>Booking #@Model.booking_ID</h4>
+                <hr />
+                @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+                @Html.HiddenFor(model => model.booking_ID)
+                @Html.HiddenFor(model => model.User_ID)
+
+                <!-- Category Dropdown -->
+                <div class="mb-3">
+                    @Html.LabelFor(model => model.Cat_ID, "Category", htmlAttributes: new { @class = "form-label" })
+                    @Html.DropDownList(
+                        "Cat_ID",
+                        (SelectList)ViewBag.Categories,
+                        "-- Select Category --",
+                        new { @class = "form-select", id = "editCategorySelect" }
+                    )
+                    @Html.ValidationMessageFor(model => model.Cat_ID, "", new { @class = "text-danger" })
+                </div>
+
+                <!-- Movie Dropdown (Cascading) -->
+                <div class="mb-3">
+                    @Html.LabelFor(model => model.Movie_ID, "Movie", htmlAttributes: new { @class = "form-label" })
+                    @Html.DropDownList(
+                        "Movie_ID",
+                        (SelectList)ViewBag.Movies,
+                        "-- Select Movie --",
+                        new { @class = "form-select", id = "editMovieSelect" }
+                    )
+                    @Html.ValidationMessageFor(model => model.Movie_ID, "", new { @class = "text-danger" })
+                    <span id="editLoadingMovies" class="text-muted small" style="display:none;">Loading movies...</span>
+                </div>
+
+                <!-- Ticket Rate -->
+                <div class="mb-3">
+                    <label class="form-label">Ticket Rate (₹)</label>
+                    <input type="text" id="editDisplayRate" class="form-control" readonly value="@(((decimal)ViewBag.CurrentRate).ToString("F2"))" />
+                </div>
+
+                <!-- Number of Tickets -->
+                <div class="mb-3">
+                    @Html.LabelFor(model => model.no_of_Tickets, htmlAttributes: new { @class = "form-label" })
+                    @Html.TextBoxFor(
+                        model => model.no_of_Tickets,
+                        new {
+                            @class = "form-control",
+                            type = "number",
+                            id = "editTicketsInput",
+                            min = "1",
+                            max = "50"
+                        }
+                    )
+                    @Html.ValidationMessageFor(model => model.no_of_Tickets, "", new { @class = "text-danger" })
+                </div>
+
+                <!-- Total Amount Calculation -->
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Total Amount (₹)</label>
+                    <input type="text" id="editDisplayTotal" class="form-control fw-bold" readonly value="₹@Model.amount.ToString("F2")" />
+                    @Html.HiddenFor(model => model.amount, new { id = "editTotalAmountInput" })
+                </div>
+
+                <div class="mb-3">
+                    <input type="submit" value="Save Changes" class="btn btn-primary" />
+                    @Html.ActionLink("Back to My Bookings", "MyBookings", null, new { @class = "btn btn-outline-secondary" })
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            var currentRate = parseFloat($("#editDisplayRate").val()) || 0;
+
+            function calculateEditAmount() {
+                var tickets = parseInt($("#editTicketsInput").val()) || 0;
+                if (tickets < 1) tickets = 1;
+                var total = currentRate * tickets;
+                $("#editDisplayTotal").val("₹" + total.toFixed(2));
+                $("#editTotalAmountInput").val(total.toFixed(2));
+            }
+
+            $("#editTicketsInput").on("input change", function () {
+                calculateEditAmount();
+            });
+
+            // Cascading Category -> Movie Dropdown
+            $("#editCategorySelect").change(function () {
+                var catId = $(this).val();
+                var $movieSelect = $("#editMovieSelect");
+                $movieSelect.empty().append($('<option></option>').val('').text('-- Select Movie --'));
+
+                currentRate = 0;
+                $("#editDisplayRate").val("0.00");
+                calculateEditAmount();
+
+                if (!catId || catId === "0") {
+                    return;
+                }
+
+                $("#editLoadingMovies").show();
+
+                $.ajax({
+                    url: '@Url.Action("GetMoviesByCategory", "Movie")',
+                    type: 'GET',
+                    data: { catId: catId },
+                    success: function (data) {
+                        $("#editLoadingMovies").hide();
+                        if (data && data.length > 0) {
+                            $.each(data, function (i, movie) {
+                                var opt = $('<option></option>')
+                                    .val(movie.Movie_ID)
+                                    .text(movie.Movie_name + " (₹" + parseFloat(movie.Rate).toFixed(2) + ")")
+                                    .attr("data-rate", movie.Rate);
+                                $movieSelect.append(opt);
+                            });
+                        } else {
+                            $movieSelect.append($('<option disabled></option>').text('No movies in this category'));
+                        }
+                    },
+                    error: function () {
+                        $("#editLoadingMovies").hide();
+                        alert("Error loading movies.");
+                    }
+                });
+            });
+
+            $("#editMovieSelect").change(function () {
+                var movieId = $(this).val();
+                if (!movieId) {
+                    currentRate = 0;
+                    $("#editDisplayRate").val("0.00");
+                    calculateEditAmount();
+                    return;
+                }
+
+                var $opt = $(this).find("option:selected");
+                var rateAttr = $opt.attr("data-rate");
+
+                if (rateAttr) {
+                    currentRate = parseFloat(rateAttr) || 0;
+                    $("#editDisplayRate").val(currentRate.toFixed(2));
+                    calculateEditAmount();
+                } else {
+                    $.ajax({
+                        url: '@Url.Action("GetMovieRate", "Movie")',
+                        type: 'GET',
+                        data: { movieId: movieId },
+                        success: function (res) {
+                            currentRate = parseFloat(res.rate) || 0;
+                            $("#editDisplayRate").val(currentRate.toFixed(2));
+                            calculateEditAmount();
+                        }
+                    });
+                }
+            });
+
+            calculateEditAmount();
+        });
+    </script>
+}

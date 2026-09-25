@@ -1,33 +1,82 @@
-﻿@{
+@model IEnumerable<OnlineMovieBooking.Models.Movie>
+
+@{
     ViewBag.Title = "Home Page";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var categories = ViewBag.Categories as List<OnlineMovieBooking.Models.MovieCategory>;
 }
 
 <main>
-    <section class="row" aria-labelledby="aspnetTitle">
-        <h1 id="title">ASP.NET</h1>
-        <p class="lead">ASP.NET is a free web framework for building great Web sites and Web applications using HTML, CSS and JavaScript.</p>
-        <p><a href="https://asp.net" class="btn btn-primary btn-md">Learn more &raquo;</a></p>
-    </section>
-
-    <div class="row">
-        <section class="col-md-4" aria-labelledby="gettingStartedTitle">
-            <h2 id="gettingStartedTitle">Getting started</h2>
+    <div class="p-4 mb-4 bg-light rounded-3 mt-3">
+        <div class="container-fluid py-3">
+            <h1 class="display-5 fw-bold">Online Movie Booking</h1>
+            <p class="col-md-8 fs-5">Welcome to the Online Movie Booking System. Browse movies, view categories, and easily book your movie tickets.</p>
             <p>
-                ASP.NET MVC gives you a powerful, patterns-based way to build dynamic websites that
-                enables a clean separation of concerns and gives you full control over markup
-                for enjoyable, agile development.
+                @Html.ActionLink("Book Tickets", "Book", "Booking", null, new { @class = "btn btn-primary btn-lg" })
+                @Html.ActionLink("View Movies", "Index", "Movie", null, new { @class = "btn btn-outline-secondary btn-lg" })
             </p>
-            <p><a class="btn btn-outline-dark" href="https://go.microsoft.com/fwlink/?LinkId=301865">Learn more &raquo;</a></p>
-        </section>
-        <section class="col-md-4" aria-labelledby="librariesTitle">
-            <h2 id="librariesTitle">Get more libraries</h2>
-            <p>NuGet is a free Visual Studio extension that makes it easy to add, remove, and update libraries and tools in Visual Studio projects.</p>
-            <p><a class="btn btn-outline-dark" href="https://go.microsoft.com/fwlink/?LinkId=301866">Learn more &raquo;</a></p>
-        </section>
-        <section class="col-md-4" aria-labelledby="hostingTitle">
-            <h2 id="hostingTitle">Web Hosting</h2>
-            <p>You can easily find a web hosting company that offers the right mix of features and price for your applications.</p>
-            <p><a class="btn btn-outline-dark" href="https://go.microsoft.com/fwlink/?LinkId=301867">Learn more &raquo;</a></p>
-        </section>
+        </div>
+    </div>
+
+    <!-- Category Quick Links -->
+    <div class="mb-4">
+        <h4>Movie Categories</h4>
+        <div class="d-flex flex-wrap gap-2 mt-2">
+            @Html.ActionLink("All Movies", "Index", "Movie", null, new { @class = "btn btn-outline-dark btn-sm" })
+            @if (categories != null)
+            {
+                foreach (var cat in categories)
+                {
+                    <a href="@Url.Action("Index", "Movie", new { searchCatId = cat.Cat_ID })" class="btn btn-outline-primary btn-sm">
+                        @cat.Cat_Type
+                    </a>
+                }
+            }
+        </div>
+    </div>
+
+    <!-- Now Showing Movies -->
+    <div class="mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4>Now Showing</h4>
+            @Html.ActionLink("View All Movies >>", "Index", "Movie", null, new { @class = "text-decoration-none" })
+        </div>
+
+        @if (Model != null && Model.Any())
+        {
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Movie Name</th>
+                            <th>Category</th>
+                            <th>Release Date</th>
+                            <th>Rate</th>
+                            <th style="width: 130px;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var movie in Model)
+                        {
+                            <tr>
+                                <td><strong>@movie.Movie_name</strong></td>
+                                <td>@movie.Cat_Type</td>
+                                <td>@movie.Release_Date.ToString("dd-MM-yyyy")</td>
+                                <td>₹@movie.rate.ToString("F2")</td>
+                                <td>
+                                    <a href="@Url.Action("Book", "Booking", new { movieId = movie.Movie_ID, catId = movie.Cat_ID })" class="btn btn-primary btn-sm">
+                                        Book Tickets
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <p class="text-muted">No movies available at the moment.</p>
+        }
     </div>
 </main>

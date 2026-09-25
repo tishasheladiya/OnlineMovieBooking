@@ -1,0 +1,76 @@
+@model IEnumerable<OnlineMovieBooking.Models.Movie>
+
+@{
+    ViewBag.Title = "Movie List";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Movie List</h2>
+
+<!-- Category Search / Filter -->
+@using (Html.BeginForm("Index", "Movie", FormMethod.Get, new { @class = "row g-3 align-items-center mb-3 mt-1" }))
+{
+    <div class="col-auto">
+        <label class="col-form-label fw-bold">Search by Category:</label>
+    </div>
+    <div class="col-auto">
+        @Html.DropDownList(
+            "searchCatId",
+            (SelectList)ViewBag.Categories,
+            "-- All Categories --",
+            new { @class = "form-select", onchange = "this.form.submit();" }
+        )
+    </div>
+    <div class="col-auto">
+        <input type="submit" value="Search" class="btn btn-secondary" />
+        @if (ViewBag.SelectedCatId != null && (int?)ViewBag.SelectedCatId > 0)
+        {
+            @Html.ActionLink("Show All", "Index", null, new { @class = "btn btn-outline-secondary" })
+        }
+    </div>
+}
+
+<p>
+    @Html.ActionLink("Add New Movie", "Create", null, new { @class = "btn btn-primary" })
+</p>
+
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>Movie ID</th>
+            <th>Movie Name</th>
+            <th>Category</th>
+            <th>Release Date</th>
+            <th>Rate</th>
+            <th style="width: 220px;">Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model != null && Model.Any())
+        {
+            foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.Movie_ID</td>
+                    <td>@item.Movie_name</td>
+                    <td>@item.Cat_Type</td>
+                    <td>@item.Release_Date.ToString("dd-MM-yyyy")</td>
+                    <td>₹@item.rate.ToString("F2")</td>
+                    <td>
+                        <a href="@Url.Action("Book", "Booking", new { movieId = item.Movie_ID, catId = item.Cat_ID })" class="btn btn-success btn-sm">
+                            Book
+                        </a>
+                        @Html.ActionLink("Edit", "Edit", new { id = item.Movie_ID }, new { @class = "btn btn-warning btn-sm" })
+                        @Html.ActionLink("Delete", "Delete", new { id = item.Movie_ID }, new { @class = "btn btn-danger btn-sm" })
+                    </td>
+                </tr>
+            }
+        }
+        else
+        {
+            <tr>
+                <td colspan="6" class="text-center text-muted">No movies found.</td>
+            </tr>
+        }
+    </tbody>
+</table>

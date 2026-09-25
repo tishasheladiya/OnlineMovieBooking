@@ -1,0 +1,52 @@
+@model IEnumerable<OnlineMovieBooking.Models.Booking>
+
+@{
+    ViewBag.Title = "My Bookings";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>My Movie Bookings</h2>
+
+<p>
+    @Html.ActionLink("Book New Tickets", "Book", "Booking", null, new { @class = "btn btn-primary" })
+</p>
+
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>Booking ID</th>
+            <th>Movie Name</th>
+            <th>Category</th>
+            <th>Rate</th>
+            <th>No. of Tickets</th>
+            <th>Total Amount</th>
+            <th style="width: 180px;">Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model != null && Model.Any())
+        {
+            foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.booking_ID</td>
+                    <td>@item.Movie_name</td>
+                    <td>@item.Cat_Type</td>
+                    <td>₹@item.Movie_Rate.ToString("F2")</td>
+                    <td>@item.no_of_Tickets</td>
+                    <td><strong>₹@item.amount.ToString("F2")</strong></td>
+                    <td>
+                        @Html.ActionLink("Edit", "Edit", new { id = item.booking_ID }, new { @class = "btn btn-warning btn-sm" })
+                        @Html.ActionLink("Cancel", "Delete", new { id = item.booking_ID }, new { @class = "btn btn-danger btn-sm" })
+                    </td>
+                </tr>
+            }
+        }
+        else
+        {
+            <tr>
+                <td colspan="7" class="text-center text-muted">No bookings found.</td>
+            </tr>
+        }
+    </tbody>
+</table>

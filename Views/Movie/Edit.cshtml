@@ -1,0 +1,58 @@
+@model OnlineMovieBooking.Models.Movie
+
+@{
+    ViewBag.Title = "Edit Movie";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Edit Movie</h2>
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+    <div class="form-horizontal">
+        <h4>Movie</h4>
+        <hr />
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        @Html.HiddenFor(model => model.Movie_ID)
+
+        <div class="mb-3">
+            <label class="form-label">Movie ID</label>
+            <input type="text" class="form-control" value="@Model.Movie_ID" disabled readonly />
+        </div>
+
+        <div class="mb-3">
+            @Html.LabelFor(model => model.Movie_name, htmlAttributes: new { @class = "form-label" })
+            @Html.TextBoxFor(model => model.Movie_name, new { @class = "form-control" })
+            @Html.ValidationMessageFor(model => model.Movie_name, "", new { @class = "text-danger" })
+        </div>
+
+        <div class="mb-3">
+            @Html.LabelFor(model => model.Cat_ID, "Category", htmlAttributes: new { @class = "form-label" })
+            @Html.DropDownList("Cat_ID", (SelectList)ViewBag.Categories, "-- Select Category --", new { @class = "form-select" })
+            @Html.ValidationMessageFor(model => model.Cat_ID, "", new { @class = "text-danger" })
+        </div>
+
+        <div class="mb-3">
+            @Html.LabelFor(model => model.Release_Date, htmlAttributes: new { @class = "form-label" })
+            @Html.TextBoxFor(model => model.Release_Date, "{0:yyyy-MM-dd}", new { @class = "form-control", type = "date" })
+            @Html.ValidationMessageFor(model => model.Release_Date, "", new { @class = "text-danger" })
+        </div>
+
+        <div class="mb-3">
+            @Html.LabelFor(model => model.rate, htmlAttributes: new { @class = "form-label" })
+            @Html.TextBoxFor(model => model.rate, new { @class = "form-control", type = "number", step = "0.01", min = "1" })
+            @Html.ValidationMessageFor(model => model.rate, "", new { @class = "text-danger" })
+        </div>
+
+        <div class="mb-3">
+            <input type="submit" value="Save" class="btn btn-primary" />
+            @Html.ActionLink("Back to List", "Index", null, new { @class = "btn btn-outline-secondary" })
+        </div>
+    </div>
+}
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}

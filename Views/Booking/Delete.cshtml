@@ -1,0 +1,42 @@
+@model OnlineMovieBooking.Models.Booking
+
+@{
+    ViewBag.Title = "Cancel Booking";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Cancel Booking</h2>
+
+<h3>Are you sure you want to cancel this booking?</h3>
+<div>
+    <h4>Booking #@Model.booking_ID</h4>
+    <hr />
+    <dl class="row">
+        <dt class="col-sm-2">Booking ID</dt>
+        <dd class="col-sm-10">@Model.booking_ID</dd>
+
+        <dt class="col-sm-2">Movie Name</dt>
+        <dd class="col-sm-10">@Model.Movie_name</dd>
+
+        <dt class="col-sm-2">Category</dt>
+        <dd class="col-sm-10">@Model.Cat_Type</dd>
+
+        <dt class="col-sm-2">Rate</dt>
+        <dd class="col-sm-10">₹@Model.Movie_Rate.ToString("F2")</dd>
+
+        <dt class="col-sm-2">No. of Tickets</dt>
+        <dd class="col-sm-10">@Model.no_of_Tickets</dd>
+
+        <dt class="col-sm-2">Total Amount</dt>
+        <dd class="col-sm-10">₹@Model.amount.ToString("F2")</dd>
+    </dl>
+
+    @using (Html.BeginForm("DeleteConfirmed", "Booking", FormMethod.Post))
+    {
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(model => model.booking_ID)
+
+        <input type="submit" value="Cancel Booking" class="btn btn-danger" />
+        @Html.ActionLink("Back to My Bookings", "MyBookings", null, new { @class = "btn btn-outline-secondary" })
+    }
+</div>

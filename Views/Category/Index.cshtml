@@ -1,40 +1,44 @@
-﻿@model IEnumerable<OnlineMovieBooking.Models.MovieCategory>
+@model IEnumerable<OnlineMovieBooking.Models.MovieCategory>
 
 @{
-    ViewBag.Title = "Index";
+    ViewBag.Title = "Categories";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h2>Index</h2>
+<h2>Categories</h2>
 
 <p>
-    @Html.ActionLink("Create New", "Create")
+    @Html.ActionLink("Create New Category", "Create", null, new { @class = "btn btn-primary" })
 </p>
-<table class="table">
-    <tr>
-        <th>
-            @Html.DisplayNameFor(model => model.Cat_ID)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Cat_Type)
-        </th>
-        <th></th>
-    </tr>
 
-@foreach (var item in Model) {
-    <tr>
-        <td>
-            @Html.DisplayFor(modelItem => item.Cat_ID)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Cat_Type)
-        </td>
-        <td>
-            @Html.ActionLink("Edit", "Edit", new { id = item.Cat_ID })
-            |
-            @Html.ActionLink("Delete", "Delete", new { id = item.Cat_ID })
-        </td>
-    </tr>
-}
-
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>Cat_ID</th>
+            <th>Cat_Type</th>
+            <th style="width: 200px;">Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model != null && Model.Any())
+        {
+            foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.Cat_ID</td>
+                    <td>@item.Cat_Type</td>
+                    <td>
+                        @Html.ActionLink("Edit", "Edit", new { id = item.Cat_ID }, new { @class = "btn btn-warning btn-sm" })
+                        @Html.ActionLink("Delete", "Delete", new { id = item.Cat_ID }, new { @class = "btn btn-danger btn-sm" })
+                    </td>
+                </tr>
+            }
+        }
+        else
+        {
+            <tr>
+                <td colspan="3" class="text-center text-muted">No categories found.</td>
+            </tr>
+        }
+    </tbody>
 </table>
